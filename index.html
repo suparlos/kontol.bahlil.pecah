@@ -8,7 +8,7 @@
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
       --bg:#000; --fg:#e9f5ff; --muted:#9aa3a7;
-      --neon:#00ffe5; --neon2:#00b3ff; --fire:#ffae00; --fire2:#ff5e00;
+      --neon:#00ffe5; --neon2:#00b3ff;
     }
     html,body{height:100%}
     body{
@@ -20,10 +20,17 @@
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
       display:flex;align-items:center;justify-content:center;overflow:hidden;
     }
-    #embers,#heat{position:fixed;inset:0;z-index:0;pointer-events:none}
+    /* pastikan overlay efek TIDAK blok klik */
+    #embers,#heat{
+      position:fixed;inset:0;z-index:0;pointer-events:none !important;
+    }
     #heat{mix-blend-mode:screen;opacity:.35}
+
+    /* isolate = bikin stacking context mandiri */
     .stage{
-      position:relative;z-index:1;width:min(92vw,880px);
+      isolation:isolate;           /* ⬅️ penting */
+      position:relative; z-index:1;
+      width:min(92vw,880px);
       padding:clamp(16px,3vw,28px);
       backdrop-filter: blur(6px);
       background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
@@ -31,13 +38,17 @@
       border-radius:16px; text-align:center;
       box-shadow:0 15px 50px rgba(0,0,0,.65), inset 0 0 60px rgba(255,255,255,0.02);
     }
+
+    /* foto DI BAWAH tombol */
     .photo-wrap{
-      position:relative;margin:0 auto 18px;width:min(86vw,520px);aspect-ratio:1/1;
-      border-radius:14px;overflow:hidden;background:#0b0e12;
+      position:relative; z-index:1;      /* ⬅️ bawah */
+      margin:0 auto 18px; width:min(86vw,520px); aspect-ratio:1/1;
+      border-radius:14px; overflow:hidden; background:#0b0e12;
       border:1px solid rgba(255,255,255,0.06);
       box-shadow:0 0 0 3px rgba(0,255,229,0.05),0 0 45px rgba(0,255,229,0.2);
       transform-style:preserve-3d;
       transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s;
+      will-change: transform;            /* stabil klik */
     }
     .photo-wrap:hover{
       transform:perspective(900px) rotateX(6deg) rotateY(-6deg) translateY(-2px);
@@ -58,8 +69,7 @@
     @keyframes scan{0%{transform:translateY(-3%)}50%{transform:translateY(3%)}100%{transform:translateY(-3%)}}
 
     .title{
-      font-size:clamp(22px,3.8vw,36px);
-      letter-spacing:.6px;color:var(--neon);
+      font-size:clamp(22px,3.8vw,36px); letter-spacing:.6px; color:var(--neon);
       text-shadow:0 0 8px var(--neon),0 0 18px rgba(0,255,229,.35);
       display:inline-block;border-right:2px solid rgba(0,255,229,.8);
       white-space:nowrap;overflow:hidden;
@@ -67,15 +77,16 @@
     }
     @keyframes type{from{width:0}to{width:100%}}
     @keyframes caret{50%{border-color:transparent}}
-    .subtitle{margin-top:8px;color:var(--muted);font-size:clamp(14px,2.6vw,18px);line-height:1.45;
-      text-shadow:0 0 6px rgba(0,179,255,.25)}
+    .subtitle{margin-top:8px;color:var(--muted);font-size:clamp(14px,2.6vw,18px);line-height:1.45}
 
-    /* ======= PLAY/PAUSE ELEGAN ======= */
+    /* ===== Play/Pause elegan DI ATAS foto ===== */
     .player{
+      position:relative; z-index:5;      /* ⬅️ di atas */
       margin:18px auto 0;display:flex;flex-direction:column;align-items:center;gap:10px
     }
     .pp-btn{
-      position:relative; width:84px;height:84px;border-radius:999px;cursor:pointer;border:none;
+      position:relative; z-index:6;      /* ⬅️ paling atas */
+      width:84px;height:84px;border-radius:999px;cursor:pointer;border:none; pointer-events:auto;
       background: radial-gradient(60% 60% at 50% 40%, rgba(0,255,229,.35), rgba(0,179,255,.18)),
                   linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.03));
       box-shadow:0 0 28px rgba(0,255,229,.35), inset 0 0 30px rgba(0,255,229,.15);
@@ -84,32 +95,19 @@
     }
     .pp-btn:hover{transform:scale(1.05); box-shadow:0 0 36px rgba(0,255,229,.6), inset 0 0 38px rgba(0,255,229,.22)}
     .pp-btn:active{transform:scale(.96)}
-    .pp-btn:focus-visible{box-shadow:0 0 0 3px rgba(0,255,229,.25), 0 0 0 6px rgba(0,179,255,.2)}
-
-    /* Ripple */
-    .pp-btn .ripple{
-      position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(.6);
-      background:radial-gradient(circle at center, rgba(0,255,229,.3), transparent 60%);
-      transition:opacity .35s ease, transform .35s ease;
-    }
+    .pp-btn .ripple{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(.6);
+      background:radial-gradient(circle at center, rgba(0,255,229,.3), transparent 60%);transition:opacity .35s ease, transform .35s ease;}
     .pp-btn:active .ripple{opacity:1;transform:scale(1.2)}
 
-    /* Icon & progress ring */
     .pp-svg{position:absolute;inset:0}
-    .ring{
-      fill:none; stroke:rgba(255,255,255,.25); stroke-width:3;
-      transform:rotate(-90deg); transform-origin:center;
-      filter: drop-shadow(0 0 6px rgba(0,255,229,.35));
-    }
-    .ring.progress{
-      stroke:var(--neon); stroke-linecap:round; stroke-dasharray: 283; stroke-dashoffset: 283;
-    }
+    .ring{fill:none; stroke:rgba(255,255,255,.25); stroke-width:3; transform:rotate(-90deg); transform-origin:center;
+      filter: drop-shadow(0 0 6px rgba(0,255,229,.35))}
+    .ring.progress{stroke:var(--neon); stroke-linecap:round; stroke-dasharray:283; stroke-dashoffset:283}
     .icon{transition:opacity .18s ease; filter: drop-shadow(0 0 8px rgba(0,255,229,.6))}
     .icon.pause{opacity:0}
     .pp-btn.playing .icon.play{opacity:0}
     .pp-btn.playing .icon.pause{opacity:1}
 
-    /* Equalizer */
     .eq{display:flex;gap:3px;height:12px;align-items:flex-end}
     .bar{width:3px;background:linear-gradient(var(--neon),var(--neon2));border-radius:2px;height:3px;opacity:.65}
     .pp-btn.playing ~ .eq .bar{animation:hop 900ms ease-in-out infinite}
@@ -123,83 +121,57 @@
   </style>
 </head>
 <body>
-  <!-- HUJAN API -->
   <canvas id="embers"></canvas>
   <canvas id="heat"></canvas>
 
-  <main class="stage" role="main" aria-label="Halaman efek api & kontrol musik">
+  <main class="stage">
     <div class="photo-wrap" id="photoWrap">
-      <img class="photo"
-           src="https://gerbangbanten.co.id/wp-content/uploads/2025/10/image-14.png"
-           alt="Foto Tengah" />
+      <img class="photo" src="https://gerbangbanten.co.id/wp-content/uploads/2025/10/image-14.png" alt="Foto Tengah" />
     </div>
 
     <h1 class="title">BAHLIL KONNTOL</h1>
     <p class="subtitle">HEHEHEHEHEH</p>
 
     <div class="player">
-      <!-- Tombol Play/Pause -->
       <button id="pp" class="pp-btn" aria-label="Putar musik" aria-pressed="false">
         <span class="ripple" aria-hidden="true"></span>
         <svg class="pp-svg" viewBox="0 0 100 100" aria-hidden="true">
-          <!-- Back ring -->
           <circle cx="50" cy="50" r="45" class="ring"></circle>
-          <!-- Progress ring -->
           <circle id="ringProgress" cx="50" cy="50" r="45" class="ring progress"></circle>
-          <!-- Icons -->
-          <g class="icon play">
-            <polygon points="43,35 70,50 43,65" fill="url(#g1)"></polygon>
-          </g>
-          <g class="icon pause">
-            <rect x="40" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect>
-            <rect x="53" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect>
-          </g>
-          <defs>
-            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="var(--neon)"/>
-              <stop offset="1" stop-color="var(--neon2)"/>
-            </linearGradient>
-          </defs>
+          <g class="icon play"><polygon points="43,35 70,50 43,65" fill="url(#g1)"></polygon></g>
+          <g class="icon pause"><rect x="40" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect>
+                               <rect x="53" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect></g>
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="var(--neon)"/><stop offset="1" stop-color="var(--neon2)"/></linearGradient></defs>
         </svg>
       </button>
-
-      <!-- Equalizer mini -->
       <div class="eq" aria-hidden="true">
-        <span class="bar" style="height:6px"></span>
-        <span class="bar" style="height:3px"></span>
-        <span class="bar" style="height:9px"></span>
-        <span class="bar" style="height:4px"></span>
+        <span class="bar" style="height:6px"></span><span class="bar" style="height:3px"></span>
+        <span class="bar" style="height:9px"></span><span class="bar" style="height:4px"></span>
         <span class="bar" style="height:7px"></span>
       </div>
-
-      <p class="hint">Lorojiwo X Suparlos</p>
+      <p class="hint">Spasi/Enter untuk Play/Pause</p>
     </div>
 
     <audio id="bgm"
-      src="https://moral-peach-vdnvbs2bbq.edgeone.app/Slipknot%20-%20Psychosocial%20[OFFICIAL%20VIDEO]%20[HD]%20[5abamRO41fE].mp3"
-      preload="auto" loop></audio>
+      src="https://unpleasant-crimson-bnywi6f13i.edgeone.app/Tony%20Q%20Rastafara%20-%20Tertanam%20(Official%20Audio).mp3"
+      preload="auto" loop playsinline></audio>
   </main>
 
   <script>
-    /* ===== Hujan api (embers) ===== */
+    /* ===== Efek hujan api (singkat, sama seperti sebelumnya) ===== */
     (function(){
       const c=document.getElementById('embers'),ctx=c.getContext('2d');
       const heat=document.getElementById('heat'),htx=heat.getContext('2d');
-      let W,H,COUNT;
-      function resize(){W=c.width=heat.width=innerWidth;H=c.height=heat.height=innerHeight;COUNT=Math.round(Math.min(240,W*H/9000));}
+      let W,H,COUNT; function resize(){W=c.width=heat.width=innerWidth;H=c.height=heat.height=innerHeight;COUNT=Math.round(Math.min(240,W*H/9000));}
       addEventListener('resize',resize);resize();
-      const embers=[];function newEmber(){return{
-        x:Math.random()*W, y:-Math.random()*H, vx:(Math.random()-.5)*0.6, vy:1.6+Math.random()*2.6,
-        g:0.004+Math.random()*0.008, size:.8+Math.random()*2.2, life:120+Math.random()*240,
-        hue:15+Math.random()*30, heat:.6+Math.random()*.4, f:Math.random()*Math.PI*2};}
-      for(let i=0;i<COUNT;i++) embers.push(newEmber());
+      const embers=[];function newEmber(){return{x:Math.random()*W,y:-Math.random()*H,vx:(Math.random()-.5)*0.6,vy:1.6+Math.random()*2.6,g:0.004+Math.random()*0.008,size:.8+Math.random()*2.2,life:120+Math.random()*240,hue:15+Math.random()*30,heat:.6+Math.random()*.4,f:Math.random()*Math.PI*2};}
+      for(let i=0;i<COUNT;i++)embers.push(newEmber());
       function loop(){
         ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
         for(let i=0;i<embers.length;i++){
           const p=embers[i];p.vy+=p.g;p.x+=p.vx+Math.sin((p.f+=0.15))*0.15;p.y+=p.vy;p.life--;
-          const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);
-          grd.addColorStop(0,`hsla(${p.hue},100%,60%,${0.28*p.heat})`);
-          grd.addColorStop(1,`hsla(${p.hue+20},100%,50%,0)`);ctx.fillStyle=grd;
+          const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);grd.addColorStop(0,`hsla(${p.hue},100%,60%,${0.28*p.heat})`);grd.addColorStop(1,`hsla(${p.hue+20},100%,50%,0)`);ctx.fillStyle=grd;
           ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fill();
           ctx.fillStyle=`hsla(${p.hue},100%,65%,.85)`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
           if(p.y>H+20||p.life<=0){embers[i]=newEmber();embers[i].y=-10;}
@@ -213,11 +185,10 @@
           htx.fillStyle=grad;htx.fillRect(x-1,0,2,H);
         }
         requestAnimationFrame(loop);
-      }
-      loop();
+      } loop();
     })();
 
-    /* ===== Parallax tilt pada foto ===== */
+    /* ===== Parallax tilt foto ===== */
     (function(){
       const wrap=document.getElementById('photoWrap'); let rAF;
       wrap.addEventListener('mousemove',e=>{
@@ -229,63 +200,44 @@
       wrap.addEventListener('mouseleave',()=>wrap.style.transform='');
     })();
 
-    /* ===== Kontrol Play/Pause elegan ===== */
+    /* ===== Kontrol Play/Pause ===== */
     (function(){
       const btn=document.getElementById('pp');
       const audio=document.getElementById('bgm');
       const ring=document.getElementById('ringProgress');
-      const R=45, CIRC=2*Math.PI*R; // 283
-      ring.style.strokeDasharray = CIRC.toFixed(0);
-      ring.style.strokeDashoffset= CIRC.toFixed(0);
+      const R=45, CIRC=2*Math.PI*R;
+      ring.style.strokeDasharray= CIRC.toFixed(0);
+      ring.style.strokeDashoffset=CIRC.toFixed(0);
 
       let rafId=null, playing=false;
-
       function setPlaying(state){
         playing=state;
         btn.classList.toggle('playing', state);
         btn.setAttribute('aria-pressed', String(state));
         btn.setAttribute('aria-label', state? 'Jeda musik' : 'Putar musik');
       }
-
       function updateProgress(){
-        if(!audio.duration) { rafId=requestAnimationFrame(updateProgress); return; }
-        const ratio = audio.currentTime / audio.duration;
-        ring.style.strokeDashoffset = (CIRC*(1 - ratio)).toFixed(2);
-        rafId = requestAnimationFrame(updateProgress);
+        if(!audio.duration){ rafId=requestAnimationFrame(updateProgress); return; }
+        ring.style.strokeDashoffset=(CIRC*(1 - audio.currentTime/audio.duration)).toFixed(2);
+        rafId=requestAnimationFrame(updateProgress);
       }
-
       async function play(){
         try{
-          audio.volume=0;
-          await audio.play();
-          setPlaying(true);
-          // fade in
-          let v=0; (function fade(){ v=Math.min(1, v+.05); audio.volume=v; if(v<1) requestAnimationFrame(fade);})();
+          audio.volume=0; await audio.play();
+          setPlaying(true); let v=0; (function fade(){ v=Math.min(1,v+.05); audio.volume=v; if(v<1) requestAnimationFrame(fade);})();
           cancelAnimationFrame(rafId); updateProgress();
         }catch(e){
-          // jika gagal (seharusnya tidak karena manual)
-          console.warn(e);
+          console.warn('Gagal play:', e); alert('Audio tidak bisa diputar. Coba cek koneksi atau URL audio.');
         }
       }
-
-      function pause(){
-        audio.pause();
-        setPlaying(false);
-        cancelAnimationFrame(rafId);
-      }
-
+      function pause(){ audio.pause(); setPlaying(false); cancelAnimationFrame(rafId); }
       btn.addEventListener('click', ()=> playing ? pause() : play());
+      btn.addEventListener('keydown', e=>{ if(e.code==='Space'||e.key===' '||e.key==='Enter'){ e.preventDefault(); playing? pause(): play(); } });
 
-      // Keyboard: Space / Enter
-      btn.addEventListener('keydown', (e)=>{
-        if(e.code==='Space' || e.key===' ' || e.key==='Enter'){ e.preventDefault(); playing? pause(): play(); }
-      });
-
-      // Reset saat lagu berakhir (kalau loop dimatikan)
-      audio.addEventListener('ended', ()=>{ setPlaying(false); ring.style.strokeDashoffset=CIRC; });
-
-      // Inisialisasi
-      setPlaying(false);
+      /* Debug: tampilkan error load audio (kalau sumber mati/CORS) */
+      audio.addEventListener('error', ()=>{ console.error('Audio error code:', audio.error && audio.error.code); alert('Gagal memuat audio. URL mungkin tidak valid atau diblokir.'); });
+      audio.addEventListener('stalled', ()=>console.warn('Audio stalled (network lambat).'));
+      audio.addEventListener('canplay', ()=>console.log('Audio siap diputar.'));
     })();
   </script>
 </body>
