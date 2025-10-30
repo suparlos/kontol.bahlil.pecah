@@ -13,22 +13,19 @@
     html,body{height:100%}
     body{
       background:
-        radial-gradient(1200px 800px at 10% -10%,rgba(0,255,234,0.06),transparent 60%),
-        radial-gradient(900px 600px at 120% 120%,rgba(0,179,255,0.07),transparent 55%),
+        radial-gradient(1200px 800px at 10% -10%,rgba(0,255,234,0.05),transparent 60%),
+        radial-gradient(900px 600px at 120% 120%,rgba(0,179,255,0.06),transparent 55%),
         var(--bg);
       color:var(--fg);
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
       display:flex;align-items:center;justify-content:center;overflow:hidden;
     }
-    /* pastikan overlay efek TIDAK blok klik */
-    #embers,#heat{
-      position:fixed;inset:0;z-index:0;pointer-events:none !important;
-    }
-    #heat{mix-blend-mode:screen;opacity:.35}
+    /* kanvas latar */
+    #embers,#heat{position:fixed;inset:0;z-index:0;pointer-events:none !important}
+    #heat{mix-blend-mode:screen;opacity:.25}
 
-    /* isolate = bikin stacking context mandiri */
     .stage{
-      isolation:isolate;           /* ⬅️ penting */
+      isolation:isolate;
       position:relative; z-index:1;
       width:min(92vw,880px);
       padding:clamp(16px,3vw,28px);
@@ -39,77 +36,90 @@
       box-shadow:0 15px 50px rgba(0,0,0,.65), inset 0 0 60px rgba(255,255,255,0.02);
     }
 
-    /* foto DI BAWAH tombol */
+    /* ===== Foto: efek terbakar tipis ===== */
     .photo-wrap{
-      position:relative; z-index:1;      /* ⬅️ bawah */
+      position:relative; z-index:1;
       margin:0 auto 18px; width:min(86vw,520px); aspect-ratio:1/1;
       border-radius:14px; overflow:hidden; background:#0b0e12;
       border:1px solid rgba(255,255,255,0.06);
-      box-shadow:0 0 0 3px rgba(0,255,229,0.05),0 0 45px rgba(0,255,229,0.2);
+      box-shadow:
+        0 0 0 2px rgba(0,255,229,0.04),
+        0 0 30px rgba(0,255,229,0.12),
+        0 0 40px rgba(255,0,0,0.18); /* sedikit glow merah */
       transform-style:preserve-3d;
       transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s;
-      will-change: transform;            /* stabil klik */
+      will-change: transform;
     }
     .photo-wrap:hover{
-      transform:perspective(900px) rotateX(6deg) rotateY(-6deg) translateY(-2px);
-      box-shadow:0 0 0 3px rgba(0,255,229,0.1),0 30px 80px rgba(0,255,229,0.18);
+      transform:perspective(900px) rotateX(4deg) rotateY(-4deg) translateY(-1px);
+      box-shadow:
+        0 0 0 2px rgba(0,255,229,0.08),
+        0 20px 60px rgba(0,255,229,0.16),
+        0 0 60px rgba(255,0,0,0.22);
     }
-    .photo{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.06) saturate(1.06)}
+    .photo{
+      width:100%;height:100%;object-fit:cover;display:block;
+      filter:contrast(1.05) saturate(1.04) url(#heatwarp);
+      -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+      -webkit-mask-size:100% 100%; mask-size:100% 100%;
+      -webkit-mask-position:0 0; mask-position:0 0;
+    }
     .photo-wrap::before,.photo-wrap::after{content:"";position:absolute;inset:0;pointer-events:none}
     .photo-wrap::before{
       background:
-        radial-gradient(120% 100% at 50% 120%,rgba(0,0,0,.55),transparent 50%),
-        radial-gradient(120% 100% at 50% -10%,rgba(0,0,0,.35),transparent 45%);
+        radial-gradient(120% 100% at 50% 120%,rgba(0,0,0,.35),transparent 50%),
+        radial-gradient(120% 100% at 50% -10%,rgba(0,0,0,.25),transparent 45%);
       mix-blend-mode:multiply;
     }
     .photo-wrap::after{
-      background:repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 1px 3px);
-      opacity:.16;animation:scan 6s linear infinite;
+      background:repeating-linear-gradient(to bottom, rgba(255,255,255,.04) 0 1px, rgba(0,0,0,0) 1px 3px);
+      opacity:.12;animation:scan 7s linear infinite;
     }
-    @keyframes scan{0%{transform:translateY(-3%)}50%{transform:translateY(3%)}100%{transform:translateY(-3%)}}
+    @keyframes scan{0%{transform:translateY(-2%)}50%{transform:translateY(2%)}100%{transform:translateY(-2%)}}
+
+    /* api tipis di tepi bawah */
+    #burn{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen}
+    .edge-glow{
+      position:absolute;inset:0;z-index:2;pointer-events:none;
+      background:
+        radial-gradient(60% 22% at 50% 100%, rgba(255,20,20,.22), transparent 70%),
+        radial-gradient(40% 16% at 10% 100%, rgba(255,0,0,.18), transparent 70%),
+        radial-gradient(40% 16% at 90% 100%, rgba(255,0,0,.18), transparent 70%);
+      animation:glow 2.8s ease-in-out infinite;
+    }
+    @keyframes glow{0%,100%{opacity:.35}50%{opacity:.6}}
 
     .title{
       font-size:clamp(22px,3.8vw,36px); letter-spacing:.6px; color:var(--neon);
-      text-shadow:0 0 8px var(--neon),0 0 18px rgba(0,255,229,.35);
-      display:inline-block;border-right:2px solid rgba(0,255,229,.8);
+      text-shadow:0 0 8px var(--neon),0 0 18px rgba(0,255,229,.28);
+      display:inline-block;border-right:2px solid rgba(0,255,229,.6);
       white-space:nowrap;overflow:hidden;
-      animation:type 2.4s steps(24,end) .2s both, caret 650ms steps(1) infinite;
+      animation:type 2.2s steps(22,end) .2s both, caret 700ms steps(1) infinite;
     }
     @keyframes type{from{width:0}to{width:100%}}
     @keyframes caret{50%{border-color:transparent}}
     .subtitle{margin-top:8px;color:var(--muted);font-size:clamp(14px,2.6vw,18px);line-height:1.45}
 
-    /* ===== Play/Pause elegan DI ATAS foto ===== */
-    .player{
-      position:relative; z-index:5;      /* ⬅️ di atas */
-      margin:18px auto 0;display:flex;flex-direction:column;align-items:center;gap:10px
-    }
+    /* ===== Play/Pause elegan ===== */
+    .player{position:relative; z-index:5; margin:18px auto 0;display:flex;flex-direction:column;align-items:center;gap:10px}
     .pp-btn{
-      position:relative; z-index:6;      /* ⬅️ paling atas */
-      width:84px;height:84px;border-radius:999px;cursor:pointer;border:none; pointer-events:auto;
-      background: radial-gradient(60% 60% at 50% 40%, rgba(0,255,229,.35), rgba(0,179,255,.18)),
-                  linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.03));
-      box-shadow:0 0 28px rgba(0,255,229,.35), inset 0 0 30px rgba(0,255,229,.15);
-      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
-      outline: none;
+      position:relative; z-index:6; width:84px;height:84px;border-radius:999px;cursor:pointer;border:none;
+      background: radial-gradient(60% 60% at 50% 40%, rgba(0,255,229,.3), rgba(0,179,255,.16)),
+                  linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02));
+      box-shadow:0 0 22px rgba(0,255,229,.28), inset 0 0 24px rgba(0,255,229,.12);
+      transition: transform .15s ease, box-shadow .15s ease;
     }
-    .pp-btn:hover{transform:scale(1.05); box-shadow:0 0 36px rgba(0,255,229,.6), inset 0 0 38px rgba(0,255,229,.22)}
+    .pp-btn:hover{transform:scale(1.05); box-shadow:0 0 30px rgba(0,255,229,.45), inset 0 0 30px rgba(0,255,229,.18)}
     .pp-btn:active{transform:scale(.96)}
-    .pp-btn .ripple{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(.6);
-      background:radial-gradient(circle at center, rgba(0,255,229,.3), transparent 60%);transition:opacity .35s ease, transform .35s ease;}
-    .pp-btn:active .ripple{opacity:1;transform:scale(1.2)}
-
     .pp-svg{position:absolute;inset:0}
-    .ring{fill:none; stroke:rgba(255,255,255,.25); stroke-width:3; transform:rotate(-90deg); transform-origin:center;
-      filter: drop-shadow(0 0 6px rgba(0,255,229,.35))}
+    .ring{fill:none; stroke:rgba(255,255,255,.22); stroke-width:3; transform:rotate(-90deg); transform-origin:center}
     .ring.progress{stroke:var(--neon); stroke-linecap:round; stroke-dasharray:283; stroke-dashoffset:283}
-    .icon{transition:opacity .18s ease; filter: drop-shadow(0 0 8px rgba(0,255,229,.6))}
+    .icon{transition:opacity .18s ease}
     .icon.pause{opacity:0}
     .pp-btn.playing .icon.play{opacity:0}
     .pp-btn.playing .icon.pause{opacity:1}
-
     .eq{display:flex;gap:3px;height:12px;align-items:flex-end}
-    .bar{width:3px;background:linear-gradient(var(--neon),var(--neon2));border-radius:2px;height:3px;opacity:.65}
+    .bar{width:3px;background:linear-gradient(var(--neon),var(--neon2));border-radius:2px;height:3px;opacity:.6}
     .pp-btn.playing ~ .eq .bar{animation:hop 900ms ease-in-out infinite}
     .pp-btn.playing ~ .eq .bar:nth-child(2){animation-delay:.15s}
     .pp-btn.playing ~ .eq .bar:nth-child(3){animation-delay:.3s}
@@ -117,24 +127,57 @@
     .pp-btn.playing ~ .eq .bar:nth-child(5){animation-delay:.6s}
     @keyframes hop{0%,100%{height:3px}50%{height:12px}}
 
-    .hint{color:#9fd9ff;font-size:12px}
+    /* ===== Motivasi sedih (lebih lambat & ke bawah) ===== */
+    .mood-wrap{ margin-top:28px; display:flex; justify-content:center; }
+    .mood{
+      max-width:min(86vw,700px);
+      padding:12px 16px;
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:12px;
+      font-size:clamp(13px,2.1vw,18px);
+      color:#b7cbe0; line-height:1.6;
+      text-shadow:0 0 6px rgba(0,179,255,.12);
+      white-space:nowrap; overflow:hidden;
+      border-right:2px solid rgba(183,203,224,.85);
+      animation:caret 900ms steps(1) infinite; /* lebih pelan lagi */
+    }
   </style>
 </head>
 <body>
+  <!-- latar -->
   <canvas id="embers"></canvas>
   <canvas id="heat"></canvas>
 
   <main class="stage">
     <div class="photo-wrap" id="photoWrap">
-      <img class="photo" src="https://gerbangbanten.co.id/wp-content/uploads/2025/10/image-14.png" alt="Foto Tengah" />
+      <img id="photo" class="photo"
+           src="https://gerbangbanten.co.id/wp-content/uploads/2025/10/image-14.png"
+           alt="Foto Tengah" />
+      <div class="edge-glow"></div>
+      <canvas id="burn"></canvas>
+
+      <!-- SVG heat warp (lebih ringan) -->
+      <svg width="0" height="0" style="position:absolute">
+        <filter id="heatwarp">
+          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.014" numOctaves="2" seed="2" result="n">
+            <animate attributeName="baseFrequency" dur="7s" values="0.006 0.014;0.009 0.02;0.006 0.014" repeatCount="indefinite"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G">
+            <animate attributeName="scale" dur="7s" values="4;7;4" repeatCount="indefinite"/>
+          </feDisplacementMap>
+        </filter>
+      </svg>
     </div>
 
     <h1 class="title">BAHLIL KONNTOL</h1>
     <p class="subtitle">HEHEHEHEHEH</p>
 
+    <!-- Motivasi sedih -->
+    <div class="mood-wrap"><div id="mood" class="mood" aria-live="polite"></div></div>
+
     <div class="player">
       <button id="pp" class="pp-btn" aria-label="Putar musik" aria-pressed="false">
-        <span class="ripple" aria-hidden="true"></span>
         <svg class="pp-svg" viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="50" cy="50" r="45" class="ring"></circle>
           <circle id="ringProgress" cx="50" cy="50" r="45" class="ring progress"></circle>
@@ -150,57 +193,183 @@
         <span class="bar" style="height:9px"></span><span class="bar" style="height:4px"></span>
         <span class="bar" style="height:7px"></span>
       </div>
-      <p class="hint">Spasi/Enter untuk Play/Pause</p>
     </div>
 
     <audio id="bgm"
-      src="https://unpleasant-crimson-bnywi6f13i.edgeone.app/Tony%20Q%20Rastafara%20-%20Tertanam%20(Official%20Audio).mp3"
+      src="https://moral-peach-vdnvbs2bbq.edgeone.app/Slipknot%20-%20Psychosocial%20[OFFICIAL%20VIDEO]%20[HD]%20[5abamRO41fE].mp3"
       preload="auto" loop playsinline></audio>
   </main>
-
+ <h2 class="title">LOROJIWO X SUPARLOS</h2>
   <script>
-    /* ===== Efek hujan api (singkat, sama seperti sebelumnya) ===== */
+    /* ===== Hujan api latar — MERAH ===== */
     (function(){
       const c=document.getElementById('embers'),ctx=c.getContext('2d');
       const heat=document.getElementById('heat'),htx=heat.getContext('2d');
-      let W,H,COUNT; function resize(){W=c.width=heat.width=innerWidth;H=c.height=heat.height=innerHeight;COUNT=Math.round(Math.min(240,W*H/9000));}
+      let W,H,COUNT;
+      function resize(){W=c.width=heat.width=innerWidth;H=c.height=heat.height=innerHeight;COUNT=Math.round(Math.min(160,W*H/14000));}
       addEventListener('resize',resize);resize();
-      const embers=[];function newEmber(){return{x:Math.random()*W,y:-Math.random()*H,vx:(Math.random()-.5)*0.6,vy:1.6+Math.random()*2.6,g:0.004+Math.random()*0.008,size:.8+Math.random()*2.2,life:120+Math.random()*240,hue:15+Math.random()*30,heat:.6+Math.random()*.4,f:Math.random()*Math.PI*2};}
+
+      const embers=[];
+      function newEmber(){return{
+        x:Math.random()*W, y:-Math.random()*H,
+        vx:(Math.random()-.5)*0.4, vy:1.2+Math.random()*2.0, g:0.003+Math.random()*0.006,
+        size:.6+Math.random()*1.6, life:120+Math.random()*240,
+        hue:0+Math.random()*8,           /* ⬅ merah */
+        heat:.55+Math.random()*.3, f:Math.random()*Math.PI*2
+      };}
+
       for(let i=0;i<COUNT;i++)embers.push(newEmber());
+
       function loop(){
-        ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
+        ctx.clearRect(0,0,W,H);
+        ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.9;
         for(let i=0;i<embers.length;i++){
-          const p=embers[i];p.vy+=p.g;p.x+=p.vx+Math.sin((p.f+=0.15))*0.15;p.y+=p.vy;p.life--;
-          const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);grd.addColorStop(0,`hsla(${p.hue},100%,60%,${0.28*p.heat})`);grd.addColorStop(1,`hsla(${p.hue+20},100%,50%,0)`);ctx.fillStyle=grd;
-          ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fill();
-          ctx.fillStyle=`hsla(${p.hue},100%,65%,.85)`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
-          if(p.y>H+20||p.life<=0){embers[i]=newEmber();embers[i].y=-10;}
+          const p=embers[i];
+          p.vy+=p.g; p.x+=p.vx+Math.sin((p.f+=0.12))*0.12; p.y+=p.vy; p.life--;
+          const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*4.8);
+          grd.addColorStop(0,`hsla(${p.hue},100%,55%,${0.20*p.heat})`);
+          grd.addColorStop(1,`hsla(${(p.hue+10)%360},100%,45%,0)`);
+          ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*2.6,0,Math.PI*2); ctx.fill();
+
+          ctx.fillStyle=`hsla(${p.hue},100%,60%,.65)`;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.size*.85,0,Math.PI*2); ctx.fill();
+
+          if(p.y>H+10||p.life<=0){embers[i]=newEmber();embers[i].y=-6;}
         }
+
+        /* Heat streaks MERAH */
         htx.clearRect(0,0,W,H);
-        const stripes=12,t=performance.now();
+        const stripes=8,t=performance.now();
         for(let i=0;i<stripes;i++){
-          const x=(i/stripes)*W+Math.sin(t*0.0008+i)*12;
+          const x=(i/stripes)*W+Math.sin(t*0.0007+i)*10;
           const grad=htx.createLinearGradient(x,0,x,H);
-          grad.addColorStop(0,'rgba(255,120,0,0.05)');grad.addColorStop(0.5,'rgba(255,160,0,0.08)');grad.addColorStop(1,'rgba(255,90,0,0.04)');
-          htx.fillStyle=grad;htx.fillRect(x-1,0,2,H);
+          grad.addColorStop(0,'rgba(255,40,40,0.035)');
+          grad.addColorStop(0.5,'rgba(255,20,20,0.06)');
+          grad.addColorStop(1,'rgba(255,0,0,0.035)');
+          htx.fillStyle=grad; htx.fillRect(x-1,0,2,H);
+        }
+        requestAnimationFrame(loop);
+      }
+      loop();
+    })();
+
+    /* ===== Api tepi foto — tipis (tetap) ===== */
+    (function(){
+      const canvas=document.getElementById('burn');
+      const ctx=canvas.getContext('2d',{alpha:true});
+      function size(){ canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight; }
+      addEventListener('resize', size); size();
+
+      const flames=[];
+      function spawn(x){
+        const baseY = canvas.height - 1;
+        return { x, y: baseY, vx:(Math.random()-.5)*0.35, vy:-(1.2+Math.random()*1.6),
+                 life:45+Math.random()*35, r:2+Math.random()*4, hue:0+Math.random()*10, wob:Math.random()*Math.PI*2 }; /* merah */
+      }
+      function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.85;
+        for(let i=0;i<3;i++) flames.push(spawn(Math.random()*canvas.width));
+        if(Math.random()<0.4) flames.push(spawn(2));
+        if(Math.random()<0.4) flames.push(spawn(canvas.width-2));
+
+        for(let i=flames.length-1;i>=0;i--){
+          const f=flames[i];
+          f.wob+=0.18; f.x+=f.vx+Math.sin(f.wob)*0.35; f.y+=f.vy; f.life--;
+          const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*3.0);
+          g.addColorStop(0,`hsla(${f.hue},100%,60%,.6)`);
+          g.addColorStop(0.5,`hsla(${(f.hue+10)%360},100%,50%,.32)`);
+          g.addColorStop(1,`hsla(${(f.hue+20)%360},100%,45%,0)`);
+          ctx.fillStyle=g; ctx.beginPath(); ctx.arc(f.x,f.y,f.r*1.8,0,Math.PI*2); ctx.fill();
+          if(f.life<=0 || f.y < canvas.height*0.3) flames.splice(i,1);
         }
         requestAnimationFrame(loop);
       } loop();
     })();
 
-    /* ===== Parallax tilt foto ===== */
+    /* ===== Burn MASK tipis (tetap) ===== */
+    (function(){
+      const img = document.getElementById('photo');
+      let cw=0,ch=0, raf;
+      function rand(a,b){ return a + Math.random()*(b-a); }
+
+      function makeMask(){
+        const r = img.getBoundingClientRect();
+        const w = Math.max(4, Math.floor(r.width));
+        const h = Math.max(4, Math.floor(r.height));
+        if(w===cw && h===ch) return;
+        cw=w; ch=h;
+
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+
+        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,w,h);
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.filter = 'blur(0.3px)';
+
+        const baseTrim = h*0.03;
+        ctx.beginPath();
+        ctx.moveTo(0, h - baseTrim);
+        const seg = 20;
+        for(let i=1;i<=seg;i++){
+          const x = (i/seg)*w;
+          const amp = h*0.02 + Math.sin(i*0.9)*h*0.007 + rand(-h*0.006,h*0.006);
+          const y = h - (baseTrim + amp);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, h+8); ctx.lineTo(0, h+8); ctx.closePath(); ctx.fill();
+
+        function cutSide(left=true){
+          ctx.beginPath();
+          const xBase = left? 0 : w, dir = left? 1 : -1;
+          ctx.moveTo(xBase, 0);
+          const step = Math.max(14, Math.floor(h/20));
+          for(let y=0;y<=h;y+=step){
+            const off = (h*0.012) + Math.sin(y*0.08)*(h*0.008) + rand(-h*0.006,h*0.006);
+            ctx.lineTo(xBase + dir*off, y);
+          }
+          ctx.lineTo(xBase, h+8); ctx.closePath(); ctx.fill();
+        }
+        cutSide(true); cutSide(false);
+
+        for(let i=0;i<8;i++){
+          const rr = rand(h*0.008, h*0.02);
+          const xx = rand(rr*0.8, w-rr*0.8);
+          const yy = rand(h*0.82, h-rr*0.35);
+          const grd = ctx.createRadialGradient(xx,yy,0, xx,yy, rr);
+          grd.addColorStop(0,'rgba(0,0,0,1)');
+          grd.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(xx,yy,rr,0,Math.PI*2); ctx.fill();
+        }
+
+        const url = c.toDataURL('image/png');
+        img.style.webkitMaskImage = `url(${url})`;
+        img.style.maskImage = `url(${url})`;
+      }
+
+      function animateMask(){
+        cancelAnimationFrame(raf);
+        makeMask();
+        raf = requestAnimationFrame(()=>setTimeout(animateMask, 2200 + Math.random()*1500));
+      }
+      window.addEventListener('load', ()=>{ makeMask(); animateMask(); });
+      window.addEventListener('resize', ()=>{ cw=0; ch=0; makeMask(); });
+    })();
+
+    /* ===== Parallax tilt ===== */
     (function(){
       const wrap=document.getElementById('photoWrap'); let rAF;
       wrap.addEventListener('mousemove',e=>{
         const b=wrap.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2;
         const dx=(e.clientX-cx)/(b.width/2),dy=(e.clientY-cy)/(b.height/2);
         cancelAnimationFrame(rAF);
-        rAF=requestAnimationFrame(()=>{wrap.style.transform=`perspective(900px) rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateY(-2px)`;});
+        rAF=requestAnimationFrame(()=>{wrap.style.transform=`perspective(900px) rotateX(${(-dy*4).toFixed(2)}deg) rotateY(${(dx*4).toFixed(2)}deg) translateY(-1px)`;});
       });
       wrap.addEventListener('mouseleave',()=>wrap.style.transform='');
     })();
 
-    /* ===== Kontrol Play/Pause ===== */
+    /* ===== Play/Pause ===== */
     (function(){
       const btn=document.getElementById('pp');
       const audio=document.getElementById('bgm');
@@ -210,34 +379,45 @@
       ring.style.strokeDashoffset=CIRC.toFixed(0);
 
       let rafId=null, playing=false;
-      function setPlaying(state){
-        playing=state;
-        btn.classList.toggle('playing', state);
-        btn.setAttribute('aria-pressed', String(state));
-        btn.setAttribute('aria-label', state? 'Jeda musik' : 'Putar musik');
-      }
-      function updateProgress(){
-        if(!audio.duration){ rafId=requestAnimationFrame(updateProgress); return; }
-        ring.style.strokeDashoffset=(CIRC*(1 - audio.currentTime/audio.duration)).toFixed(2);
-        rafId=requestAnimationFrame(updateProgress);
-      }
-      async function play(){
-        try{
-          audio.volume=0; await audio.play();
-          setPlaying(true); let v=0; (function fade(){ v=Math.min(1,v+.05); audio.volume=v; if(v<1) requestAnimationFrame(fade);})();
-          cancelAnimationFrame(rafId); updateProgress();
-        }catch(e){
-          console.warn('Gagal play:', e); alert('Audio tidak bisa diputar. Coba cek koneksi atau URL audio.');
-        }
-      }
+      function setPlaying(s){ playing=s; btn.classList.toggle('playing',s); btn.setAttribute('aria-pressed',String(s)); btn.setAttribute('aria-label', s?'Jeda musik':'Putar musik'); }
+      function update(){ if(!audio.duration){ rafId=requestAnimationFrame(update); return; } ring.style.strokeDashoffset=(CIRC*(1 - audio.currentTime/audio.duration)).toFixed(2); rafId=requestAnimationFrame(update); }
+      async function play(){ try{ audio.volume=0; await audio.play(); setPlaying(true); let v=0; (function f(){ v=Math.min(1,v+.04); audio.volume=v; if(v<1) requestAnimationFrame(f); })(); cancelAnimationFrame(rafId); update(); }catch(e){ alert('Audio gagal diputar. Cek URL/koneksi.'); } }
       function pause(){ audio.pause(); setPlaying(false); cancelAnimationFrame(rafId); }
-      btn.addEventListener('click', ()=> playing ? pause() : play());
+      btn.addEventListener('click', ()=> playing? pause(): play());
       btn.addEventListener('keydown', e=>{ if(e.code==='Space'||e.key===' '||e.key==='Enter'){ e.preventDefault(); playing? pause(): play(); } });
+    })();
 
-      /* Debug: tampilkan error load audio (kalau sumber mati/CORS) */
-      audio.addEventListener('error', ()=>{ console.error('Audio error code:', audio.error && audio.error.code); alert('Gagal memuat audio. URL mungkin tidak valid atau diblokir.'); });
-      audio.addEventListener('stalled', ()=>console.warn('Audio stalled (network lambat).'));
-      audio.addEventListener('canplay', ()=>console.log('Audio siap diputar.'));
+    /* ===== Typewriter motivasi sedih — LEBIH lambat ===== */
+    (function(){
+      const el = document.getElementById('mood');
+      const lines = [
+        "Di balik tawa, ada beban yang tak sempat diceritakan.",
+        "Tak semua yang kuat baik-baik saja, kadang hanya terbiasa menyembunyikan luka.",
+        "Jika dunia terasa berat, pelan-pelan saja — bernapas juga sudah bentuk berjuang.",
+        "Air mata tak selalu lemah; kadang ia cara hati bertahan."
+      ];
+      let i=0, j=0, del=false, cooldown=0;
+
+      function tick(){
+        if(cooldown>0){ cooldown--; return requestAnimationFrame(tick); }
+        const t = lines[i];
+
+        const typeSpeed = 3.2;   /* ⬅️ makin lambat (besar = lebih lambat karena 1/typeSpeed) */
+        const eraseSpeed = 4.2;  /* hapus juga lambat */
+        const holdEnd   = 110;   /* jeda lebih lama setelah kalimat selesai */
+        const holdStart = 30;    /* jeda sebelum kalimat berikutnya */
+
+        if(!del){
+          j += (Math.random()<0.25? 0 : 1/typeSpeed);
+          if(j>=t.length){ j=t.length; del=true; cooldown=holdEnd; }
+        }else{
+          j -= 1/eraseSpeed;
+          if(j<=0){ j=0; del=false; i=(i+1)%lines.length; cooldown=holdStart; }
+        }
+        el.textContent = t.slice(0, Math.floor(j));
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
     })();
   </script>
 </body>
