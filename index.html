@@ -7,11 +7,8 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
-      --bg:#000;
-      --fg:#e9f5ff;
-      --muted:#9aa3a7;
-      --neon:#00ffe5;
-      --card:#07090c;
+      --bg:#000; --fg:#e9f5ff; --muted:#9aa3a7;
+      --neon:#00ffe5; --neon2:#00b3ff; --fire:#ffae00; --fire2:#ff5e00;
     }
     html,body{height:100%}
     body{
@@ -21,47 +18,32 @@
         var(--bg);
       color:var(--fg);
       font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      display:flex;align-items:center;justify-content:center;
-      overflow:hidden;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;
     }
-
-    /* Kanvas efek hujan api */
-    #embers, #heat{
-      position:fixed;inset:0;z-index:0;pointer-events:none;
-    }
-    /* Heat haze tipis di atas api */
-    #heat{mix-blend-mode:screen; opacity:.35;}
-
+    #embers,#heat{position:fixed;inset:0;z-index:0;pointer-events:none}
+    #heat{mix-blend-mode:screen;opacity:.35}
     .stage{
-      position:relative;z-index:1;
-      width:min(92vw,880px);
+      position:relative;z-index:1;width:min(92vw,880px);
       padding:clamp(16px,3vw,28px);
       backdrop-filter: blur(6px);
       background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
       border:1px solid rgba(255,255,255,0.06);
-      border-radius:16px;
+      border-radius:16px; text-align:center;
       box-shadow:0 15px 50px rgba(0,0,0,.65), inset 0 0 60px rgba(255,255,255,0.02);
-      text-align:center;
     }
-
     .photo-wrap{
-      position:relative;margin:0 auto 18px;
-      width:min(86vw,520px);aspect-ratio:1/1;
+      position:relative;margin:0 auto 18px;width:min(86vw,520px);aspect-ratio:1/1;
       border-radius:14px;overflow:hidden;background:#0b0e12;
       border:1px solid rgba(255,255,255,0.06);
-      box-shadow:0 0 0 3px rgba(0,255,229,0.05), 0 0 45px rgba(0,255,229,0.2);
+      box-shadow:0 0 0 3px rgba(0,255,229,0.05),0 0 45px rgba(0,255,229,0.2);
       transform-style:preserve-3d;
       transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s;
     }
     .photo-wrap:hover{
-      transform: perspective(900px) rotateX(6deg) rotateY(-6deg) translateY(-2px);
-      box-shadow:0 0 0 3px rgba(0,255,229,0.1), 0 30px 80px rgba(0,255,229,0.18);
+      transform:perspective(900px) rotateX(6deg) rotateY(-6deg) translateY(-2px);
+      box-shadow:0 0 0 3px rgba(0,255,229,0.1),0 30px 80px rgba(0,255,229,0.18);
     }
-    .photo{
-      width:100%;height:100%;object-fit:cover;display:block;
-      filter: contrast(1.06) saturate(1.06);
-    }
-    /* Vignette + scanline */
+    .photo{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.06) saturate(1.06)}
     .photo-wrap::before,.photo-wrap::after{content:"";position:absolute;inset:0;pointer-events:none}
     .photo-wrap::before{
       background:
@@ -70,41 +52,74 @@
       mix-blend-mode:multiply;
     }
     .photo-wrap::after{
-      background: repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 1px 3px);
-      opacity:.16; animation:scan 6s linear infinite;
+      background:repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 1px 3px);
+      opacity:.16;animation:scan 6s linear infinite;
     }
     @keyframes scan{0%{transform:translateY(-3%)}50%{transform:translateY(3%)}100%{transform:translateY(-3%)}}
 
     .title{
       font-size:clamp(22px,3.8vw,36px);
       letter-spacing:.6px;color:var(--neon);
-      text-shadow:0 0 8px var(--neon), 0 0 18px rgba(0,255,229,.35);
+      text-shadow:0 0 8px var(--neon),0 0 18px rgba(0,255,229,.35);
       display:inline-block;border-right:2px solid rgba(0,255,229,.8);
       white-space:nowrap;overflow:hidden;
       animation:type 2.4s steps(24,end) .2s both, caret 650ms steps(1) infinite;
     }
     @keyframes type{from{width:0}to{width:100%}}
     @keyframes caret{50%{border-color:transparent}}
-    .subtitle{
-      margin-top:8px;color:var(--muted);
-      font-size:clamp(14px,2.6vw,18px);line-height:1.45;
-      text-shadow: 0 0 6px rgba(0,179,255,.25);
-    }
+    .subtitle{margin-top:8px;color:var(--muted);font-size:clamp(14px,2.6vw,18px);line-height:1.45;
+      text-shadow:0 0 6px rgba(0,179,255,.25)}
 
-    .audio-pill{
-      margin:14px auto 0;display:inline-flex;align-items:center;gap:10px;
-      padding:10px 14px;border-radius:999px;
-      border:1px solid rgba(255,255,255,0.08);
-      background:linear-gradient(90deg, rgba(0,255,229,.08), rgba(255,120,0,.12));
-      font-size:14px;color:var(--fg);
-      box-shadow: inset 0 0 40px rgba(255,120,0,.08);
+    /* ======= PLAY/PAUSE ELEGAN ======= */
+    .player{
+      margin:18px auto 0;display:flex;flex-direction:column;align-items:center;gap:10px
     }
-    .dot{width:9px;height:9px;border-radius:999px;background:#ffae00;
-      box-shadow:0 0 10px #ffae00,0 0 20px #ff5e00;animation:pulse 1.6s ease-in-out infinite}
-    @keyframes pulse{0%,100%{transform:scale(.9);opacity:.85}50%{transform:scale(1.2);opacity:1}}
-    .hint{color:#ffb36b;margin-top:10px;font-size:13px;display:none}
+    .pp-btn{
+      position:relative; width:84px;height:84px;border-radius:999px;cursor:pointer;border:none;
+      background: radial-gradient(60% 60% at 50% 40%, rgba(0,255,229,.35), rgba(0,179,255,.18)),
+                  linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.03));
+      box-shadow:0 0 28px rgba(0,255,229,.35), inset 0 0 30px rgba(0,255,229,.15);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+      outline: none;
+    }
+    .pp-btn:hover{transform:scale(1.05); box-shadow:0 0 36px rgba(0,255,229,.6), inset 0 0 38px rgba(0,255,229,.22)}
+    .pp-btn:active{transform:scale(.96)}
+    .pp-btn:focus-visible{box-shadow:0 0 0 3px rgba(0,255,229,.25), 0 0 0 6px rgba(0,179,255,.2)}
 
-    @media (max-width:560px){ .photo-wrap{width:88vw} }
+    /* Ripple */
+    .pp-btn .ripple{
+      position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transform:scale(.6);
+      background:radial-gradient(circle at center, rgba(0,255,229,.3), transparent 60%);
+      transition:opacity .35s ease, transform .35s ease;
+    }
+    .pp-btn:active .ripple{opacity:1;transform:scale(1.2)}
+
+    /* Icon & progress ring */
+    .pp-svg{position:absolute;inset:0}
+    .ring{
+      fill:none; stroke:rgba(255,255,255,.25); stroke-width:3;
+      transform:rotate(-90deg); transform-origin:center;
+      filter: drop-shadow(0 0 6px rgba(0,255,229,.35));
+    }
+    .ring.progress{
+      stroke:var(--neon); stroke-linecap:round; stroke-dasharray: 283; stroke-dashoffset: 283;
+    }
+    .icon{transition:opacity .18s ease; filter: drop-shadow(0 0 8px rgba(0,255,229,.6))}
+    .icon.pause{opacity:0}
+    .pp-btn.playing .icon.play{opacity:0}
+    .pp-btn.playing .icon.pause{opacity:1}
+
+    /* Equalizer */
+    .eq{display:flex;gap:3px;height:12px;align-items:flex-end}
+    .bar{width:3px;background:linear-gradient(var(--neon),var(--neon2));border-radius:2px;height:3px;opacity:.65}
+    .pp-btn.playing ~ .eq .bar{animation:hop 900ms ease-in-out infinite}
+    .pp-btn.playing ~ .eq .bar:nth-child(2){animation-delay:.15s}
+    .pp-btn.playing ~ .eq .bar:nth-child(3){animation-delay:.3s}
+    .pp-btn.playing ~ .eq .bar:nth-child(4){animation-delay:.45s}
+    .pp-btn.playing ~ .eq .bar:nth-child(5){animation-delay:.6s}
+    @keyframes hop{0%,100%{height:3px}50%{height:12px}}
+
+    .hint{color:#9fd9ff;font-size:12px}
   </style>
 </head>
 <body>
@@ -112,9 +127,9 @@
   <canvas id="embers"></canvas>
   <canvas id="heat"></canvas>
 
-  <main class="stage" role="main" aria-label="Halaman efek api & autoplay">
+  <main class="stage" role="main" aria-label="Halaman efek api & kontrol musik">
     <div class="photo-wrap" id="photoWrap">
-      <img class="photo" id="photo"
+      <img class="photo"
            src="https://gerbangbanten.co.id/wp-content/uploads/2025/10/image-14.png"
            alt="Foto Tengah" />
     </div>
@@ -122,177 +137,155 @@
     <h1 class="title">BAHLIL KONNTOL</h1>
     <p class="subtitle">HEHEHEHEHEH</p>
 
-    <div class="audio-pill"><span class="dot"></span><span id="pillText">Memutar musik...</span></div>
-    <div class="hint" id="hint">🔊 Browser memblokir autoplay. (Klik di mana saja jika muncul.)</div>
+    <div class="player">
+      <!-- Tombol Play/Pause -->
+      <button id="pp" class="pp-btn" aria-label="Putar musik" aria-pressed="false">
+        <span class="ripple" aria-hidden="true"></span>
+        <svg class="pp-svg" viewBox="0 0 100 100" aria-hidden="true">
+          <!-- Back ring -->
+          <circle cx="50" cy="50" r="45" class="ring"></circle>
+          <!-- Progress ring -->
+          <circle id="ringProgress" cx="50" cy="50" r="45" class="ring progress"></circle>
+          <!-- Icons -->
+          <g class="icon play">
+            <polygon points="43,35 70,50 43,65" fill="url(#g1)"></polygon>
+          </g>
+          <g class="icon pause">
+            <rect x="40" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect>
+            <rect x="53" y="35" width="7" height="30" rx="2" fill="url(#g1)"></rect>
+          </g>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--neon)"/>
+              <stop offset="1" stop-color="var(--neon2)"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </button>
+
+      <!-- Equalizer mini -->
+      <div class="eq" aria-hidden="true">
+        <span class="bar" style="height:6px"></span>
+        <span class="bar" style="height:3px"></span>
+        <span class="bar" style="height:9px"></span>
+        <span class="bar" style="height:4px"></span>
+        <span class="bar" style="height:7px"></span>
+      </div>
+
+      <p class="hint">Lorojiwo X Suparlos</p>
+    </div>
 
     <audio id="bgm"
       src="https://moral-peach-vdnvbs2bbq.edgeone.app/Slipknot%20-%20Psychosocial%20[OFFICIAL%20VIDEO]%20[HD]%20[5abamRO41fE].mp3"
-      loop preload="auto" muted></audio>
+      preload="auto" loop></audio>
   </main>
 
   <script>
-    /* ===== HUJAN API: ember / sparks jatuh ===== */
+    /* ===== Hujan api (embers) ===== */
     (function(){
-      const c = document.getElementById('embers');
-      const ctx = c.getContext('2d');
-      const heat = document.getElementById('heat');
-      const htx = heat.getContext('2d');
-
+      const c=document.getElementById('embers'),ctx=c.getContext('2d');
+      const heat=document.getElementById('heat'),htx=heat.getContext('2d');
       let W,H,COUNT;
-      function resize(){
-        W = c.width = heat.width = innerWidth;
-        H = c.height = heat.height = innerHeight;
-        COUNT = Math.round(Math.min(240, W*H/9000)); // banyaknya ember
-      }
-      addEventListener('resize', resize); resize();
-
-      const embers = [];
-      function spawn(n=COUNT){
-        embers.length = 0;
-        for(let i=0;i<n;i++){
-          embers.push(newEmber());
-        }
-      }
-      function newEmber(){
-        const r = Math.random();
-        return {
-          x: Math.random()*W,
-          y: -Math.random()*H,
-          vx: (Math.random()*0.6 - 0.3) + (Math.random()<.5? -0.2:0.2), // sedikit angin
-          vy:  1.6 + Math.random()*2.6,
-          g:   0.004 + Math.random()*0.008,
-          size: 0.8 + Math.random()*2.2,
-          life: 120 + Math.random()*240,
-          hue:  15 + Math.random()*30, // oranye kemerahan
-          heat: 0.6 + Math.random()*0.4,
-          flick: Math.random()*Math.PI*2
-        }
-      }
-      spawn();
-
+      function resize(){W=c.width=heat.width=innerWidth;H=c.height=heat.height=innerHeight;COUNT=Math.round(Math.min(240,W*H/9000));}
+      addEventListener('resize',resize);resize();
+      const embers=[];function newEmber(){return{
+        x:Math.random()*W, y:-Math.random()*H, vx:(Math.random()-.5)*0.6, vy:1.6+Math.random()*2.6,
+        g:0.004+Math.random()*0.008, size:.8+Math.random()*2.2, life:120+Math.random()*240,
+        hue:15+Math.random()*30, heat:.6+Math.random()*.4, f:Math.random()*Math.PI*2};}
+      for(let i=0;i<COUNT;i++) embers.push(newEmber());
       function loop(){
-        // Ember layer
-        ctx.clearRect(0,0,W,H);
-        ctx.globalCompositeOperation='lighter';
+        ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
         for(let i=0;i<embers.length;i++){
-          const p = embers[i];
-          p.vy += p.g;
-          p.x += p.vx + Math.sin((p.flick+=0.15))*0.15; // goyang api
-          p.y += p.vy;
-          p.life -= 1;
-          // glow warna api
-          const grd = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);
-          grd.addColorStop(0, `hsla(${p.hue},100%,60%,${0.28*p.heat})`);
-          grd.addColorStop(1, `hsla(${p.hue+20},100%,50%,0)`);
-          ctx.fillStyle = grd;
-          ctx.beginPath();
-          ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);
-          ctx.fill();
-
-          // inti bara
-          ctx.fillStyle = `hsla(${p.hue},100%,65%,.85)`;
-          ctx.beginPath();
-          ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-          ctx.fill();
-
-          if(p.y > H + 20 || p.life<=0){
-            embers[i] = newEmber();
-            embers[i].y = -10;
-          }
+          const p=embers[i];p.vy+=p.g;p.x+=p.vx+Math.sin((p.f+=0.15))*0.15;p.y+=p.vy;p.life--;
+          const grd=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);
+          grd.addColorStop(0,`hsla(${p.hue},100%,60%,${0.28*p.heat})`);
+          grd.addColorStop(1,`hsla(${p.hue+20},100%,50%,0)`);ctx.fillStyle=grd;
+          ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle=`hsla(${p.hue},100%,65%,.85)`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+          if(p.y>H+20||p.life<=0){embers[i]=newEmber();embers[i].y=-10;}
         }
-
-        // Heat haze tipis (vertical streaks)
         htx.clearRect(0,0,W,H);
-        const stripes = 12;
+        const stripes=12,t=performance.now();
         for(let i=0;i<stripes;i++){
-          const x = (i/stripes)*W + Math.sin(perfNow*0.0008+i)*12;
-          const grad = htx.createLinearGradient(x,0,x,H);
-          grad.addColorStop(0, 'rgba(255,120,0,0.05)');
-          grad.addColorStop(0.5, 'rgba(255,160,0,0.08)');
-          grad.addColorStop(1, 'rgba(255,90,0,0.04)');
-          htx.fillStyle = grad;
-          htx.fillRect(x-1,0,2,H);
+          const x=(i/stripes)*W+Math.sin(t*0.0008+i)*12;
+          const grad=htx.createLinearGradient(x,0,x,H);
+          grad.addColorStop(0,'rgba(255,120,0,0.05)');grad.addColorStop(0.5,'rgba(255,160,0,0.08)');grad.addColorStop(1,'rgba(255,90,0,0.04)');
+          htx.fillStyle=grad;htx.fillRect(x-1,0,2,H);
         }
-
-        perfNow = performance.now();
         requestAnimationFrame(loop);
       }
-      let perfNow = performance.now();
       loop();
     })();
 
-    /* ===== Parallax tilt ringan di foto ===== */
+    /* ===== Parallax tilt pada foto ===== */
     (function(){
-      const wrap = document.getElementById('photoWrap');
-      let rAF;
-      function tilt(e){
-        const b = wrap.getBoundingClientRect();
-        const cx = b.left + b.width/2, cy = b.top + b.height/2;
-        const dx = (e.clientX - cx) / (b.width/2);
-        const dy = (e.clientY - cy) / (b.height/2);
+      const wrap=document.getElementById('photoWrap'); let rAF;
+      wrap.addEventListener('mousemove',e=>{
+        const b=wrap.getBoundingClientRect(),cx=b.left+b.width/2,cy=b.top+b.height/2;
+        const dx=(e.clientX-cx)/(b.width/2),dy=(e.clientY-cy)/(b.height/2);
         cancelAnimationFrame(rAF);
-        rAF = requestAnimationFrame(()=>{
-          wrap.style.transform =
-            `perspective(900px) rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateY(-2px)`;
-        });
-      }
-      wrap.addEventListener('mousemove', tilt);
-      wrap.addEventListener('mouseleave', ()=>{ wrap.style.transform=''; });
+        rAF=requestAnimationFrame(()=>{wrap.style.transform=`perspective(900px) rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateY(-2px)`;});
+      });
+      wrap.addEventListener('mouseleave',()=>wrap.style.transform='');
     })();
 
-    /* ===== Autoplay tanpa klik: muted -> play -> unmute + fade; retry jika gagal ===== */
+    /* ===== Kontrol Play/Pause elegan ===== */
     (function(){
-      const audio = document.getElementById('bgm');
-      const pillText = document.getElementById('pillText');
-      const hint = document.getElementById('hint');
+      const btn=document.getElementById('pp');
+      const audio=document.getElementById('bgm');
+      const ring=document.getElementById('ringProgress');
+      const R=45, CIRC=2*Math.PI*R; // 283
+      ring.style.strokeDasharray = CIRC.toFixed(0);
+      ring.style.strokeDashoffset= CIRC.toFixed(0);
 
-      // Set agresif agar autoplay lebih mungkin lolos
-      audio.setAttribute('playsinline','');
-      audio.muted = true;
-      audio.volume = 1.0;
+      let rafId=null, playing=false;
 
-      async function tryPlay(){
+      function setPlaying(state){
+        playing=state;
+        btn.classList.toggle('playing', state);
+        btn.setAttribute('aria-pressed', String(state));
+        btn.setAttribute('aria-label', state? 'Jeda musik' : 'Putar musik');
+      }
+
+      function updateProgress(){
+        if(!audio.duration) { rafId=requestAnimationFrame(updateProgress); return; }
+        const ratio = audio.currentTime / audio.duration;
+        ring.style.strokeDashoffset = (CIRC*(1 - ratio)).toFixed(2);
+        rafId = requestAnimationFrame(updateProgress);
+      }
+
+      async function play(){
         try{
-          // Coba mainkan saat load (muted)
+          audio.volume=0;
           await audio.play();
-          // Saat sudah "playing", unmute + fade in cepat
-          const fadeIn = ()=>{
-            audio.muted = false;
-            let v = 0.0;
-            audio.volume = v;
-            const step=()=>{ v=Math.min(1,v+.05); audio.volume=v; if(v<1) requestAnimationFrame(step); };
-            step();
-            pillText.textContent = 'Memutar musik...';
-            hint.style.display='none';
-          };
-          if(audio.readyState>=2) fadeIn();
-          else audio.addEventListener('playing', fadeIn, {once:true});
+          setPlaying(true);
+          // fade in
+          let v=0; (function fade(){ v=Math.min(1, v+.05); audio.volume=v; if(v<1) requestAnimationFrame(fade);})();
+          cancelAnimationFrame(rafId); updateProgress();
         }catch(e){
-          // Jika masih diblokir, coba ulang sebentar lagi (tanpa klik)
-          console.warn('Autoplay diblokir, retry sebentar...', e);
-          let attempts = 0;
-          const timer = setInterval(async ()=>{
-            attempts++;
-            try{
-              await audio.play();
-              audio.muted = false;
-              audio.volume = 0.0;
-              let v=0; const step=()=>{ v=Math.min(1,v+.06); audio.volume=v; if(v<1) requestAnimationFrame(step); };
-              step();
-              pillText.textContent='Memutar musik...';
-              hint.style.display='none';
-              clearInterval(timer);
-            }catch(err){
-              if(attempts>8){ // berhenti setelah beberapa kali
-                clearInterval(timer);
-                hint.style.display='block';
-                pillText.textContent='Autoplay diblokir';
-              }
-            }
-          }, 700);
+          // jika gagal (seharusnya tidak karena manual)
+          console.warn(e);
         }
       }
-      window.addEventListener('load', tryPlay, {once:true});
+
+      function pause(){
+        audio.pause();
+        setPlaying(false);
+        cancelAnimationFrame(rafId);
+      }
+
+      btn.addEventListener('click', ()=> playing ? pause() : play());
+
+      // Keyboard: Space / Enter
+      btn.addEventListener('keydown', (e)=>{
+        if(e.code==='Space' || e.key===' ' || e.key==='Enter'){ e.preventDefault(); playing? pause(): play(); }
+      });
+
+      // Reset saat lagu berakhir (kalau loop dimatikan)
+      audio.addEventListener('ended', ()=>{ setPlaying(false); ring.style.strokeDashoffset=CIRC; });
+
+      // Inisialisasi
+      setPlaying(false);
     })();
   </script>
 </body>
